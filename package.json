@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node listen.js",
     "setup-dbs": "psql -f ./db/setup.sql",
-    "seed": "NODE_ENV=development node ./db/seeds/run-seed.js",
+    "seed": "node ./db/seeds/run-seed.js",
     "devseed": "NODE_ENV=development node ./db/seeds/run-seed.js",
     "testseed": "NODE_ENV=test node ./db/seeds/run-seed.js",
     "test": "NODE_ENV=test && jest",
