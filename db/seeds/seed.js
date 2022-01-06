@@ -109,7 +109,7 @@ const seed = ({ categoryData, commentData, reviewData, userData }) => {
       return db.query(queryStr)
     })
     .then(()=> {
-      console.log("All tables populated!")
+      //console.log("All tables populated!")
     })
     .catch((err) => {
       console.log(err)
