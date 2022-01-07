@@ -194,7 +194,22 @@ console.log(categoryOf)
 }
 
 //GET /api/reviews/:review_id/comments
-exports.selectCommentsByReview = (review_id) => {
+exports.selectCommentsByReview = async (review_id) => {
+    if (isNaN(parseInt(review_id)) && review_id !== 0) {
+        console.log("in nan")
+         return Promise.reject({
+                 status: 400,
+                 msg: 'Review_id input must be corrected to be a number'
+             })
+     } else  {
+         const idExists = await database.query('SELECT * FROM reviews WHERE review_id = $1', [review_id])
+         if (idExists.rows.length === 0) {
+         return Promise.reject({
+                 status: 404,
+                 msg: 'Review_id does not exist'
+             })
+     } 
+ }
     //console.log("In GET comments by review model")
     return database.query(`SELECT * FROM comments WHERE review_id = ${review_id};`)
     .then((comments) => {
@@ -202,8 +217,51 @@ exports.selectCommentsByReview = (review_id) => {
     })
 }
 
+// POST /api/reviews/:review_id/comments
+// ✓ Status 201: Responds with an object with a key of "comments" which has value of the newly created comment (79 ms)
+// ✓ Status 400: Responds with an error message when invalid review_id type is provided (77 ms)
+// ✕ Status 404: Responds with an error message when review_id doesn't exist (83 ms)
+// ✕ Status 400: Responds with an error message when required fields of username or body are missing, i.e. incomplete or absent comment (91 ms)
+// ✕ Status 404: Responds with an error message when username provided is invalid (86 ms)
+// ✓ Status 201: Responds with an object with a key of "comments" which has value of the newly created comment, ignoring unnecessary properties (85 ms)
+
 //POST /api/reviews/:review_id/comments
-exports.postCommentsByReviewId = (review_id, username, body) => {
+exports.postCommentsByReviewId = async (review_id, username = undefined, body = undefined) => {
+
+    if (username === undefined || body === undefined) {
+        return Promise.reject({
+            status: 400,
+            msg: 'Incomplete username and body section, a completed comment must be provided'
+        })
+    } else if (isNaN(parseInt(review_id)) && review_id !== 0) {
+        console.log("in nan")
+         return Promise.reject({
+                 status: 400,
+                 msg: 'Review_id input must be corrected to be a number'
+             })
+    } else {
+            const idExists = await database.query('SELECT * FROM reviews WHERE review_id = $1', [review_id])
+            console.log("id exists", idExists.rows)
+            if (idExists.rows.length === 0) {
+            return Promise.reject({
+                    status: 404,
+                    msg: 'Review_id does not exist'
+                })
+            } else {
+                const usersArr = await database.query('SELECT username FROM users')
+                const usernamesArr = usersArr.rows.map((user) => {
+                    return user.username
+                })
+                console.log(usernamesArr)
+                if (!usernamesArr.includes(username)) {
+                    return Promise.reject({
+                        status: 404,
+                        msg: 'Invalid username provided'
+                    })
+                }
+         }   
+         }  
+        
    // console.log("In POST comments by review model")
     return database.query(`
     INSERT INTO comments (review_id, author, body)
@@ -211,6 +269,7 @@ exports.postCommentsByReviewId = (review_id, username, body) => {
     .then((result) => {
         return result.rows[0]
     })
+
 }
 
 //DELETE /api/comments/:comment_id

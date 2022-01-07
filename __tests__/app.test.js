@@ -328,11 +328,21 @@ describe('GET /api/reviews/:review_id/comments', () => {
       return request(app)
         .get('/api/reviews/not_an_id/comments')
         .expect(400)
+        .then((response) => {
+          expect(response.text).toEqual(
+            'Review_id input must be corrected to be a number'
+      );
+      });
     }),
     test("Status 404: Responds with an error message when review_id doesn't exist", () => {
       return request(app)
         .get('/api/reviews/0/comments')
         .expect(404)
+        .then((response) => {
+          expect(response.text).toEqual(
+            "Review_id does not exist"
+      );
+      });
     }),
     test("Status 200: Responds with an object with a key of 'comments' which has value of an empty array when provided a valid review_id which doesn't have any comments", () => {
       return request(app)
@@ -375,6 +385,11 @@ describe('POST /api/reviews/:review_id/comments', () => {
         .post('/api/reviews/not_an_id/comments')
         .send(newComment)
         .expect(400)
+        .then((response) => {
+          expect(response.text).toEqual(
+            "Review_id input must be corrected to be a number"
+      );
+      });
     }),
     test("Status 404: Responds with an error message when review_id doesn't exist", () => {
       const newComment = {
@@ -385,6 +400,11 @@ describe('POST /api/reviews/:review_id/comments', () => {
         .post('/api/reviews/0/comments')
         .send(newComment)
         .expect(404)
+        .then((response) => {
+          expect(response.text).toEqual(
+            "Review_id does not exist"
+      );
+      });
     }),
     test("Status 400: Responds with an error message when required fields of username or body are missing, i.e. incomplete or absent comment", () => {
       const newComment = {
@@ -393,6 +413,11 @@ describe('POST /api/reviews/:review_id/comments', () => {
         .post('/api/reviews/1/comments')
         .send(newComment)
         .expect(400)
+        .then((response) => {
+          expect(response.text).toEqual(
+            "Incomplete username and body section, a completed comment must be provided"
+      );
+      });
     }),
     test("Status 404: Responds with an error message when username provided is invalid", () => {
       const newComment = {
@@ -403,6 +428,11 @@ describe('POST /api/reviews/:review_id/comments', () => {
         .post('/api/reviews/1/comments')
         .send(newComment)
         .expect(404)
+        .then((response) => {
+          expect(response.text).toEqual(
+            "Invalid username provided"
+      );
+      });
     }),
     test('Status 201: Responds with an object with a key of "comments" which has value of the newly created comment, ignoring unnecessary properties', () => {
       const newComment = {
@@ -426,9 +456,6 @@ describe('POST /api/reviews/:review_id/comments', () => {
     });
   })
 })
-
-
-
 
 describe('DELETE /api/comments/:comment_id', () => {
     test('Status 204: Returns an empty response body to show comment has been deleted', () => {
@@ -470,6 +497,16 @@ describe('GET /api', () => {
     });
   })
 })
+
+
+
+
+
+
+
+
+
+
 
 describe('GET /api/users', () => {
     test('Status 200: Responds with an object with a key of "users" which has value of an array of user objects', () => {
