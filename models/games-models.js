@@ -2,6 +2,7 @@ const { map } = require('lodash');
 const { query } = require('../db/connection');
 const database = require('../db/connection');
 
+
 //GET /api/categories
 exports.selectCategories = () => {
    // console.log("In GET categories model")
@@ -12,20 +13,23 @@ exports.selectCategories = () => {
 }
 
 //GET /api/reviews/:review_id
-exports.selectReviewById = (review_id) => {
-
-
-/*
-    if (typeof review_id !== "number") {
+exports.selectReviewById = async (review_id) => {
+    
+   if (isNaN(parseInt(review_id)) && review_id !== 0) {
+       console.log("in nan")
         return Promise.reject({
                 status: 400,
                 msg: 'Review_id input must be corrected to be a number'
             })
-    } else {
-*/
-
-
-   // console.log('In GET review by ID model');
+    } else  {
+        const idExists = await database.query('SELECT * FROM reviews WHERE review_id = $1', [review_id])
+        if (idExists.rows.length === 0) {
+        return Promise.reject({
+                status: 400,
+                msg: 'Review_id does not exist'
+            })
+    } 
+}
     let commentCount = 0
     return database.query(`SELECT COUNT(*) FROM comments WHERE review_id = $1`, [review_id])
     .then((result) => {
@@ -36,32 +40,55 @@ exports.selectReviewById = (review_id) => {
         return database.query(`SELECT * FROM reviews WHERE review_id = $1`, [review_id])
     })
     .then((result) => {
-        //result.rows.review[comment_count] = commentCount
         return result.rows;
     })
     .then((review) => {
         review[0]['comment_count'] = commentCount
         return review[0]
     })
-//}
 };
 
 //PATCH /api/reviews/:review_id
-exports.emptyRequestBody = () => {
-    //console.log("In empty request model")
-    return {
-        "message": "Empty request"
-    }
-}
-exports.incorrectRequestBody = () => {
-    //console.log("In incorrect request model")
-    return {
-        "message": "Incorrect request"
-    }
-}
+// exports.emptyRequestBody = () => {
+//     //console.log("In empty request model")
+//     return {
+//         "message": "Empty request"
+//     }
+// }
+// exports.incorrectRequestBody = () => {
+//     //console.log("In incorrect request model")
+//     return {
+//         "message": "Incorrect request"
+//     }
+// }
 
-exports.updateReviewVotesById = (review_id, inc_votes) => {
+exports.updateReviewVotesById = async (review_id, inc_votes) => {
   //  console.log('In patch model')
+  console.log("inc votes", inc_votes)
+
+  if (isNaN(parseInt(inc_votes)) && inc_votes !== 0) {
+    console.log("in no VOTES")
+    return Promise.reject({
+            status: 400,
+            msg: 'Inc_votes input must be corrected to be a number'
+        })
+  } else if (isNaN(parseInt(review_id)) && review_id !== 0) {
+    console.log("in nan")
+     return Promise.reject({
+             status: 400,
+             msg: 'Review_id input must be corrected to be a number'
+         })
+ } else  {
+     const idExists = await database.query('SELECT * FROM reviews WHERE review_id = $1', [review_id])
+     if (idExists.rows.length === 0) {
+         console.log("in ID not exist")
+     return Promise.reject({
+             status: 404,
+             msg: 'Review_id does not exist'
+         })
+ } 
+}
+console.log("gets queried", typeof inc_votes)
     return database.query(`SELECT votes FROM reviews WHERE review_id = $1`, [review_id])
     .then((result) => {
         const { votes } = result.rows[0]
@@ -76,52 +103,94 @@ exports.updateReviewVotesById = (review_id, inc_votes) => {
 };
 
 //GET /api/reviews
-exports.selectReviews = (sort_by = "created_at", order = "desc", category) => {
-   // console.log("In GET reviews model")
-    const sortBy = sort_by
+exports.selectReviews = (sort_by = "created_at", order = "desc", category = undefined) => {
+   console.log("In GET reviews model")
+   const sortBy = sort_by
     const orderBy = order
     const categoryOf = category
-    let selectReviewById = function(review_id) {
-        let commentCount = 0
-    return database.query(`SELECT COUNT(*) FROM comments WHERE review_id = $1`, [review_id])
-    .then((result) => {
-        commentCount = result.rows[0].count;
-        return commentCount
-    })
-    .then(() => {
-        return database.query(`SELECT * FROM reviews WHERE review_id = $1`, [review_id])
-    })
-    .then((result) => {
-        return result.rows;
-    })
-    .then((review) => {
-        review[0]['comment_count'] = commentCount
-        delete review[0]['review_body']
-        return review[0]
-    })
+console.log(sortBy)
+console.log(orderBy)
+console.log(categoryOf)
+
+    if (orderBy !== "desc" && orderBy !== "asc") {
+        console.log("bad order")
+        return Promise.reject({
+            status: 400,
+            msg: "Invalid order query, must provide a ascending or descending to order"
+        })
+    } else if (sort_by !== "created_at") {
+        console.log("in sort err")
+        const reviewColumnsArr = ["review_id", "title", "review_body", "designer", "review_img_url", "votes", "category", "owner", "created_at"]
+        if (!reviewColumnsArr.includes(sortBy)) {
+            console.log("sort by reject")
+        return Promise.reject({
+                status: 400,
+                msg: "Invalid sort_by query, must provide a parameter to sort by"
+            })
+    } 
+    } else if (categoryOf !== undefined) {      
+        console.log("slugs")
+        return database.query('SELECT slug FROM categories')
+        .then((slugArr) => {
+            return slugArr.rows.map((category) => {
+                return category.slug
+            })
+        }).then((categoryArr) => {
+            console.log(categoryArr)
+            if (!categoryArr.includes(categoryOf)) {
+                return Promise.reject({
+                    status: 404,
+                    msg: 'Invalid category, must provide an existing category'
+                })
+            }
+        })
     }
-    let queryStr = 'SELECT review_id FROM reviews'
-    /*
-    if (categoryOf) {
-        queryStr += ` JOIN categories ON categories.slug=reviews.category WHERE category="${categoryOf}"`
-    }
-    */
-    if (sortBy !== undefined || orderBy !== undefined) {
-        queryStr += ` ORDER BY`
-    }
-    if (sortBy) {
-        queryStr += ` ${sortBy}`
-    }
-    if (orderBy) {
-        queryStr += ` ${orderBy}`
-    }
-    return database.query(queryStr + ';')
-    .then( async (id) => {
-        return await Promise.all(id.rows.map((review) => {
-            let id = review['review_id']
-            return selectReviewById(id)
-        }))
-    })
+
+        let selectReviewById = function(review_id) {
+            console.log("in async2")
+            let commentCount = 0
+        return database.query(`SELECT COUNT(*) FROM comments WHERE review_id = $1`, [review_id])
+        .then((result) => {
+            commentCount = result.rows[0].count;
+            return commentCount
+        })
+        .then(() => {
+            return database.query(`SELECT * FROM reviews WHERE review_id = $1`, [review_id])
+        })
+        .then((result) => {
+            return result.rows;
+        })
+        .then((review) => {
+            console.log("in async3")
+            review[0]['comment_count'] = commentCount
+            delete review[0]['review_body']
+            return review[0]
+        })
+        }
+        let queryStr = 'SELECT review_id FROM reviews'
+        /*
+        if (categoryOf) {
+            queryStr += ` JOIN categories ON categories.slug=reviews.category WHERE category="${categoryOf}"`
+        }
+        */
+        if (sortBy !== undefined || orderBy !== undefined) {
+            queryStr += ` ORDER BY`
+        }
+        if (sortBy) {
+            queryStr += ` ${sortBy}`
+        }
+        if (orderBy) {
+            queryStr += ` ${orderBy}`
+        }
+        return database.query(queryStr + ';')
+        .then( async (id) => {
+            console.log("in async1")
+            return await Promise.all(id.rows.map((review) => {
+                let id = review['review_id']
+                return selectReviewById(id)
+            }))
+        })   
+    
 }
 
 //GET /api/reviews/:review_id/comments

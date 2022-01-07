@@ -7,7 +7,7 @@ exports.getCategories = (req, res, next) => {
     .then((categories) => {
         res.status(200).send({ categories })
     })
-    .catch(next)
+    .catch(err => next(err))
 }
 
 //GET /api/reviews/:review_id
@@ -15,33 +15,40 @@ exports.getReviewById = (req, res, next) => {
     //console.log('In GET review by ID controller');
     const { review_id } = req.params
     selectReviewById(review_id)
-    .then((review) => {
-        res.status(200).send({review})
+    .then((review, reject) => {
+      console.log(reject)
+      console.log(review)
+        res.status(200).send({ review })
     })
-    .catch(next)
+    .catch(err => next(err))
 }
 
 //PATCH /api/reviews/:review_id
 exports.patchReviewVotesById = (req, res, next) => {
     const { review_id } = req.params
-    //console.log(review_id)
     const { inc_votes } = req.body
-    //console.log(inc_votes)
-    if (!inc_votes) {
-        console.log('Empty request body')
-        const { message } = emptyRequestBody()
-        res.status(400).send({ message })
-      } 
+    console.log("inc votes = ", inc_votes)
+
+    if(inc_votes === undefined) {
+      updateReviewVotesById(review_id, 0)
+      .then((review) => {
+      res.status(200).send({ review })   
+      }).catch(err => next(err))
+    } /*else if (!inc_votes) {
+      console.log('Empty request body')
+      const { message } = emptyRequestBody()
+      res.status(400).send({ message })
+    }*
       else if (typeof inc_votes !== 'number') {
         //console.log("Incorrect request body")
         const { message } = incorrectRequestBody()
         res.status(400).send({ message })
-      } else {
+      } else */{
         //console.log('Has request body')
         updateReviewVotesById(review_id, inc_votes)
         .then((review) => {
         res.status(200).send({ review })   
-  }).catch(next)
+  }).catch(err => next(err))
 }
 }
 
@@ -57,7 +64,7 @@ exports.getReviews = (req, res, next) => {
   .then((reviews) => {
       res.status(200).send({ reviews })
   })
-  .catch(next)
+  .catch(err => next(err))
 }
 
 /*
@@ -74,7 +81,7 @@ exports.getCommentsByReview = (req, res, next) => {
   .then((comments) => {
     res.status(200).send({ comments })
   })
-  .catch(next)
+  .catch(err => next(err))
 }
 
 //POST /api/reviews/:review_id/comments
@@ -86,7 +93,7 @@ exports.postCommentsByReview = (req, res, next) => {
   .then((comment) => {
     res.status(201).send({ comment })
   })
-  .catch(next)
+  .catch(err => next(err))
 }
 
 //DELETE /api/comments/:comment_id
@@ -97,7 +104,7 @@ exports.deleteComment = (req, res, next) => {
   .then(() => {
     res.status(204).send({})
   })
-  .catch(next)
+  .catch(err => next(err))
 }
 
 //GET /api
@@ -114,7 +121,7 @@ exports.getUsers = (req, res, next) => {
   .then((users) => {
     res.status(200).send({ users })
   })
-  .catch(next)
+  .catch(err => next(err))
 }
 
 //GET /api/users/:username
@@ -125,9 +132,8 @@ exports.getUserByUsername = (req, res, next) => {
   .then((user) => {
     res.status(200).send({ user })
   })
-  .catch(next)
+  .catch(err => next(err))
 }
-
 
 //PATCH /api/comments/:comment_id
 exports.patchCommentById = (req, res, next) => {
@@ -147,11 +153,11 @@ exports.patchCommentById = (req, res, next) => {
     patchCommentByCommentId(comment_id, inc_votes)
     .then((comment) => {
     res.status(200).send({ comment })
-  }).catch(next)
+  }).catch(err => next(err))
 }
 }
 
 //GET *
 exports.getAllOthers = (req, res, next) => {
-  res.status(404)
+  res.status(404).catch(err => next(err))
  }

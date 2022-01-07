@@ -36,7 +36,6 @@ describe('GET /api/reviews/:review_id', () => {
         .get(`/api/reviews/1`)
         .expect(200)
         .then(({ body }) => {
-          console.log(body.review)
           expect(body.review).toEqual({
             review_id: 1,
             title: 'Agricola',
@@ -57,11 +56,22 @@ describe('GET /api/reviews/:review_id', () => {
       return request(app)
         .get(`/api/reviews/not_an_id`)
         .expect(400)
-    }),
+        .then((response) => {
+          expect(response.text).toEqual(
+            "Review_id input must be corrected to be a number"
+      );
+      });
+    })
     test("Status 400: Responds with an error message when review_id doesn't exist", () => {
       return request(app)
         .get(`/api/reviews/0`)
         .expect(400)
+        .then((response) => {
+          console.log(response)
+          expect(response.text).toEqual(
+            "Review_id does not exist"
+      );
+      });
     })
 })
 
@@ -97,6 +107,11 @@ describe('PATCH /api/reviews/:review_id', () => {
         .patch(`/api/reviews/not_an_id`)
         .send(newVote)
         .expect(400)
+        .then((response) => {
+          expect(response.text).toEqual(
+            "Review_id input must be corrected to be a number"
+          );
+        });
     }),
     test("Status 400: Responds with an error message when invalid inc_votes type provided", () => {
       const newVote = {
@@ -104,7 +119,13 @@ describe('PATCH /api/reviews/:review_id', () => {
     }
       return request(app)
         .patch(`/api/reviews/1`)
+        .send(newVote)
         .expect(400)
+        .then((response) => {
+          expect(response.text).toEqual(
+            "Inc_votes input must be corrected to be a number"
+      );
+      });
     }),
     test("Status 404: Responds with an error message when review_id doesn't exist", () => {
       const newVote = {
@@ -112,15 +133,37 @@ describe('PATCH /api/reviews/:review_id', () => {
     }
       return request(app)
         .patch(`/api/reviews/0`)
+        .send(newVote)
         .expect(404)
+        .then((response) => {
+          expect(response.text).toEqual(
+            "Review_id does not exist"
+      );
+      });
     }),
-    test("Status 200: Responds with an review corresponding to review_id unchanged", () => {
+    test("Status 200: Responds with an unchanged review corresponding to review_id when input lacks inc_votes key", () => {
       const newVote = {}
       return request(app)
         .patch(`/api/reviews/1`)
         .expect(200)
+        .send(newVote)
+        .then(({ body }) => {
+          expect(body.review).toEqual(
+            {
+              title: 'Agricola',
+              designer: 'Uwe Rosenberg',
+              owner: 'mallionaire',
+              review_img_url:
+                'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png',
+              review_body: 'Farmyard fun!',
+              category: 'euro game',
+              created_at: "2021-01-18T10:00:20.514Z",
+              votes: 1,
+              review_id: 1
+            }
+          );
+      });
     })
-
 })
 
 describe('GET /api/reviews', () => {
@@ -223,16 +266,31 @@ describe('GET /api/reviews', () => {
       return request(app)
         .get('/api/reviews?sort_by=no_sort')
         .expect(400)
+        .then((response) => {
+          expect(response.text).toEqual(
+            "Invalid sort_by query, must provide a parameter to sort by"
+      );
+      });
     }),
     test("Status 400: Responds with an error message when invalid order query is provided", () => {
       return request(app)
         .get('/api/reviews?order=no_order')
         .expect(400)
+        .then((response) => {
+          expect(response.text).toEqual(
+            "Invalid order query, must provide a ascending or descending to order"
+      );
+      });
     }),
     test("Status 404: Responds with an error message when non-existent category is provided for category query", () => {
       return request(app)
         .get('/api/reviews?category=not_a_category')
         .expect(404)
+        .then((response) => {
+          expect(response.text).toEqual(
+            'Invalid category, must provide an existing category'
+      );
+      });
     }),
     test("Status 200: Responds with an object with a key of 'reviews' which has value of an empty array when provided a valid category query which doesn't have any reviews", () => {
       return request(app)

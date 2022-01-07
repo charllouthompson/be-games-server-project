@@ -14,9 +14,7 @@ const app = express();
 
 app.use(express.json())
 
-app.use(handleCustomErrors);
-app.use(handlePsqlErrors);
-app.use(handleServerErrors);
+
 
 app.get('/api/categories', getCategories);
 app.get('/api/reviews/:review_id', getReviewById);
@@ -31,5 +29,8 @@ app.get('/api/users/:username', getUserByUsername)
 app.patch('/api/comments/:comment_id', patchCommentById)
 app.get('*', getAllOthers)
 
+app.use(handleCustomErrors);
+app.use(handlePsqlErrors);
+app.use(handleServerErrors);
 
 module.exports = app;

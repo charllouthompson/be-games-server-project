@@ -1,6 +1,8 @@
 exports.handleCustomErrors = (err, req, res, next) => {
+  console.log("in top of custom error")
     if (err.status && err.msg) {
-      res.status(err.status).send({ msg: err.msg });
+      console.log("in error")
+      res.status(err.status).send(err.msg);
     } else next(err);
   };
   
@@ -15,6 +17,7 @@ exports.handleCustomErrors = (err, req, res, next) => {
 
 
 exports.handlePsqlErrors = (err, req, res, next) => {
+  console.log("in top of psql error")
     if (err.code === '22P02') {
       res.status(400).send({ msg: 'Invalid text input' });
     } else if (err.code === '22P03') {
@@ -25,6 +28,7 @@ exports.handlePsqlErrors = (err, req, res, next) => {
   };
   
 exports.handleServerErrors = (err, req, res, next) => {
+  console.log("in top of server error")
     console.log(err);
     res.status(500).send({ msg: 'Internal Server Error' });
   };
