@@ -25,32 +25,34 @@ exports.getReviewById = (req, res, next) => {
 
 //PATCH /api/reviews/:review_id
 exports.patchReviewVotesById = (req, res, next) => {
-    const { review_id } = req.params
-    const { inc_votes } = req.body
-    console.log("inc votes = ", inc_votes)
+  const { review_id } = req.params
+  const { inc_votes } = req.body
+  console.log("inc votes = ", inc_votes)
 
-    if(inc_votes === undefined) {
-      updateReviewVotesById(review_id, 0)
+  // if(inc_votes === undefined) {
+  //   updateReviewVotesById(review_id, 0)
+  //   .then((review) => {
+  //   res.status(200).send({ review })   
+  //   }).catch(err => next(err))
+  // } 
+  /*else if (!inc_votes) {
+    console.log('Empty request body')
+    const { message } = emptyRequestBody()
+    res.status(400).send({ message })
+  }*
+    else if (typeof inc_votes !== 'number') {
+      //console.log("Incorrect request body")
+      const { message } = incorrectRequestBody()
+      res.status(400).send({ message })
+    } else */{
+      //console.log('Has request body')
+      updateReviewVotesById(review_id, inc_votes)
       .then((review) => {
       res.status(200).send({ review })   
-      }).catch(err => next(err))
-    } /*else if (!inc_votes) {
-      console.log('Empty request body')
-      const { message } = emptyRequestBody()
-      res.status(400).send({ message })
-    }*
-      else if (typeof inc_votes !== 'number') {
-        //console.log("Incorrect request body")
-        const { message } = incorrectRequestBody()
-        res.status(400).send({ message })
-      } else */{
-        //console.log('Has request body')
-        updateReviewVotesById(review_id, inc_votes)
-        .then((review) => {
-        res.status(200).send({ review })   
-  }).catch(err => next(err))
+}).catch(err => next(err))
 }
 }
+
 
 //GET /api/reviews
 exports.getReviews = (req, res, next) => {
@@ -101,8 +103,9 @@ exports.deleteComment = (req, res, next) => {
   //console.log("In DELETE comment by ID controller")
   const { comment_id } = req.params
   deleteCommentById(comment_id)
-  .then(() => {
-    res.status(204).send({})
+  .then((deleted) => {
+    console.log("in controller response =", deleted)
+    res.status(204).send({ deleted })
   })
   .catch(err => next(err))
 }
@@ -159,5 +162,5 @@ exports.patchCommentById = (req, res, next) => {
 
 //GET *
 exports.getAllOthers = (req, res, next) => {
-  res.status(404).catch(err => next(err))
+  res.status(404)
  }

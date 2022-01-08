@@ -166,7 +166,7 @@ describe('PATCH /api/reviews/:review_id', () => {
     })
 })
 
-describe('GET /api/reviews', () => {
+describe.only('GET /api/reviews', () => {
     test('Status 200: Responds with an object with a key of "reviews" which has value of an array of review objects', () => {
         return request(app)
           .get('/api/reviews')
@@ -254,13 +254,13 @@ describe('GET /api/reviews', () => {
       return request(app)
         .get(`/api/reviews?category=dexterity`)
         .expect(200)
-        .then(({ body }) => {
-          expect(body.reviews).toBeInstanceOf(Array);
-          expect(body.reviews[0]).toEqual({
-              //FILL THIS ONCE CATEGORY QUERY IS COMPLETED
-            }
-          )
-        });
+        // .then(({ body }) => {
+        //   expect(body.reviews).toBeInstanceOf(Array);
+        //   expect(body.reviews[0]).toEqual({
+        //       //FILL THIS ONCE CATEGORY QUERY IS COMPLETED
+        //     }
+        //   )
+        // });
     }),
     test("Status 400: Responds with an error message when invalid sort_by query is provided", () => {
       return request(app)
@@ -462,19 +462,26 @@ describe('DELETE /api/comments/:comment_id', () => {
         return request(app)
         .delete('/api/comments/1')
         .expect(204)
-        .then(({ headers }) => {
-          expect(headers).toEqual({})
-        })
     }),
     test("Status 404: Responds with an error message when comment_id doesn't exist", () => {
       return request(app)
         .delete('/api/comments/0')
         .expect(404)
+        .then((response) => {
+          expect(response.text).toEqual(
+            "Comment_id does not exist"
+      );
+      });
     }),
     test('Status 400: Responds with an error message when invalid comment_id type is provided', () => {
       return request(app)
         .get(`/api/comments/not_an_id`)
         .expect(400)
+        .then((response) => {
+          expect(response.text).toEqual(
+            "Comment_id input must be corrected to be a number"
+      );
+      });
     })
 })
 
