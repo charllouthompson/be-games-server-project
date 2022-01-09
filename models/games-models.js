@@ -96,50 +96,169 @@ exports.updateReviewVotesById = async (review_id, inc_votes) => {
   };
   
 //GET /api/reviews
-exports.selectReviews = (sort_by = "created_at", order = "desc", category = undefined) => {
+// exports.selectReviews = (sort_by = "created_at", order = "desc", category = undefined) => {
+//     console.log("In GET reviews model")
+//     const sortBy = sort_by
+//      const orderBy = order
+//      const categoryOf = category
+//  console.log(sortBy)
+//  console.log(orderBy)
+//  console.log(categoryOf)
+ 
+//      if (orderBy !== "desc" && orderBy !== "asc") {
+//          console.log("bad order")
+//          return Promise.reject({
+//              status: 400,
+//              msg: "Invalid order query, must provide a ascending or descending to order"
+//          })
+//      } else if (sort_by !== "created_at") {
+//          console.log("in sort err")
+//          const reviewColumnsArr = ["review_id", "title", "review_body", "designer", "review_img_url", "votes", "category", "owner", "created_at"]
+//          if (!reviewColumnsArr.includes(sortBy)) {
+//              console.log("sort by reject")
+//          return Promise.reject({
+//                  status: 400,
+//                  msg: "Invalid sort_by query, must provide a parameter to sort by"
+//              })
+//      } 
+//      } else if (categoryOf !== undefined) {      
+//          console.log("slugs")
+//          return database.query('SELECT slug FROM categories')
+//          .then((slugArr) => {
+//              return slugArr.rows.map((category) => {
+//                  return category.slug
+//              })
+//          }).then((categoryArr) => {
+//              console.log(categoryArr)
+//              if (!categoryArr.includes(categoryOf)) {
+//                  console.log("reject")
+//                  return Promise.reject({
+//                      status: 404,
+//                      msg: 'Invalid category, must provide an existing category'
+//                  })
+//              }
+//              console.log("in ifs")
+//          })
+//      }
+//      console.log("after ifs")
+
+//      let selectReviewById = function(review_id) {
+//         console.log("in async2")
+//         let commentCount = 0
+//     return database.query(`SELECT COUNT(*) FROM comments WHERE review_id = $1`, [review_id])
+//     .then((result) => {
+//         commentCount = result.rows[0].count;
+//         return commentCount
+//     })
+//     .then(() => {
+//         return database.query(`SELECT * FROM reviews WHERE review_id = $1`, [review_id])
+//     })
+//     .then((result) => {
+//         return result.rows;
+//     })
+//     .then((review) => {
+//         console.log("in async3")
+//         review[0]['comment_count'] = commentCount
+//         delete review[0]['review_body']
+//         return review[0]
+//     })
+//     }
+
+//     console.log("build str")
+//     let queryStr = 'SELECT review_id FROM reviews'
+//     if (categoryOf !== undefined) {
+//         queryStr += ` WHERE category="${categoryOf}"`
+//     }
+//     if (sortBy !== undefined || orderBy !== undefined) {
+//         queryStr += ` ORDER BY`
+//     }
+//     if (sortBy) {
+//         queryStr += ` ${sortBy}`
+//     }
+//     if (orderBy) {
+//         queryStr += ` ${orderBy}`
+//     }
+//     console.log("QUERY STR =", queryStr)
+//     return database.query(queryStr + ';')
+//     .then( async (id) => {
+//         console.log("in async1")
+//         return await Promise.all(id.rows.map((review) => {
+//             let id = review['review_id']
+//             return selectReviewById(id)
+//         }))
+//     })   
+
+// }
+
+
+
+
+//GET /api/reviews/:review_id/comments
+
+
+exports.selectReviews = async (sort_by = "created_at", order = "desc", category = undefined) => {
     console.log("In GET reviews model")
     const sortBy = sort_by
      const orderBy = order
      const categoryOf = category
- console.log(sortBy)
- console.log(orderBy)
- console.log(categoryOf)
- 
-     if (orderBy !== "desc" && orderBy !== "asc") {
-         console.log("bad order")
-         return Promise.reject({
-             status: 400,
-             msg: "Invalid order query, must provide a ascending or descending to order"
-         })
-     } else if (sort_by !== "created_at") {
-         console.log("in sort err")
-         const reviewColumnsArr = ["review_id", "title", "review_body", "designer", "review_img_url", "votes", "category", "owner", "created_at"]
-         if (!reviewColumnsArr.includes(sortBy)) {
-             console.log("sort by reject")
-         return Promise.reject({
-                 status: 400,
-                 msg: "Invalid sort_by query, must provide a parameter to sort by"
-             })
-     } 
-     } else if (categoryOf !== undefined) {      
-         console.log("slugs")
-         return database.query('SELECT slug FROM categories')
-         .then((slugArr) => {
-             return slugArr.rows.map((category) => {
-                 return category.slug
-             })
-         }).then((categoryArr) => {
-             console.log(categoryArr)
-             if (!categoryArr.includes(categoryOf)) {
-                 return Promise.reject({
-                     status: 404,
-                     msg: 'Invalid category, must provide an existing category'
-                 })
-             }
-         })
-     }
-     let selectReviewById = function(review_id) {
-        console.log("in async2")
+
+     let queryStr = 'SELECT review_id FROM reviews'
+     console.log(queryStr)
+
+     if (categoryOf !== undefined) {  
+        console.log("slugs")
+        const categoryArr = await database.query('SELECT slug FROM categories').then((slugArr) => {
+            return slugArr.rows.map((category) => {
+                return category.slug
+            })
+        })
+        console.log(categoryArr)
+        if (!categoryArr.includes(categoryOf)) {
+            console.log("reject")
+            return Promise.reject({
+                status: 404,
+                msg: 'Invalid category, must provide an existing category'
+            })
+        } else {
+
+
+
+
+
+
+
+
+
+            queryStr += ` LEFT JOIN categories ON reviews.category = categories.slug WHERE category='${categoryOf}'`
+            console.log(queryStr)
+        }
+    }
+
+    if (orderBy !== "desc" && orderBy !== "asc") {
+        console.log("bad order")
+        return Promise.reject({
+            status: 400,
+            msg: "Invalid order query, must provide a ascending or descending to order"
+        })
+    }
+    
+    if (sortBy !== "created_at") {
+        console.log("in sort err")
+        const reviewColumnsArr = ["review_id", "title", "review_body", "designer", "review_img_url", "votes", "category", "owner", "created_at"]
+        if (!reviewColumnsArr.includes(sortBy)) {
+            console.log("sort by reject")
+        return Promise.reject({
+            status: 400,
+            msg: "Invalid sort_by query, must provide a parameter to sort by"
+        })
+    } 
+    }
+     
+    queryStr += ` ORDER BY ${sortBy} ${orderBy}` 
+    console.log(queryStr)
+    console.log("after ifs")
+
+    let selectReviewById = function(review_id) {
         let commentCount = 0
     return database.query(`SELECT COUNT(*) FROM comments WHERE review_id = $1`, [review_id])
     .then((result) => {
@@ -153,30 +272,15 @@ exports.selectReviews = (sort_by = "created_at", order = "desc", category = unde
         return result.rows;
     })
     .then((review) => {
-        console.log("in async3")
         review[0]['comment_count'] = commentCount
         delete review[0]['review_body']
         return review[0]
     })
     }
-    let queryStr = 'SELECT review_id FROM reviews'
-    /*
-    if (categoryOf) {
-        queryStr += ` JOIN categories ON categories.slug=reviews.category WHERE category="${categoryOf}"`
-    }
-    */
-    if (sortBy !== undefined || orderBy !== undefined) {
-        queryStr += ` ORDER BY`
-    }
-    if (sortBy) {
-        queryStr += ` ${sortBy}`
-    }
-    if (orderBy) {
-        queryStr += ` ${orderBy}`
-    }
+
     return database.query(queryStr + ';')
     .then( async (id) => {
-        console.log("in async1")
+        console.log(id.rows)
         return await Promise.all(id.rows.map((review) => {
             let id = review['review_id']
             return selectReviewById(id)
@@ -196,8 +300,6 @@ exports.selectReviews = (sort_by = "created_at", order = "desc", category = unde
 
 
 
-
-//GET /api/reviews/:review_id/comments
 exports.selectCommentsByReview = async (review_id) => {
     if (isNaN(parseInt(review_id)) && review_id !== 0) {
         console.log("in nan")

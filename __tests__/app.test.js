@@ -254,13 +254,22 @@ describe.only('GET /api/reviews', () => {
       return request(app)
         .get(`/api/reviews?category=dexterity`)
         .expect(200)
-        // .then(({ body }) => {
-        //   expect(body.reviews).toBeInstanceOf(Array);
-        //   expect(body.reviews[0]).toEqual({
-        //       //FILL THIS ONCE CATEGORY QUERY IS COMPLETED
-        //     }
-        //   )
-        // });
+        .then(({ body }) => {
+          expect(body.reviews).toBeInstanceOf(Array);
+          expect(body.reviews[0]).toEqual({
+            title: 'Jenga',
+            designer: 'Leslie Scott',
+            owner: 'philippaclaire9',
+            review_img_url:
+              'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png',
+            category: 'dexterity',
+            created_at: "2021-01-18T10:01:41.251Z",
+            votes: 5,
+            comment_count: "3",
+            review_id: 2
+          }
+          )
+        });
     }),
     test("Status 400: Responds with an error message when invalid sort_by query is provided", () => {
       return request(app)
