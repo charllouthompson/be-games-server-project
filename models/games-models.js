@@ -222,13 +222,6 @@ exports.selectReviews = async (sort_by = "created_at", order = "desc", category 
         } else {
 
 
-
-
-
-
-
-
-
             queryStr += ` LEFT JOIN categories ON reviews.category = categories.slug WHERE category='${categoryOf}'`
             console.log(queryStr)
         }
