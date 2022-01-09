@@ -1,3 +1,9 @@
-const apiRouter = require('express').Router();
+const { deleteComment, patchCommentById } = require('../controllers/games-controllers');
+const commentsRouter = require('express').Router();
 
-// apiRouter.get('')
+commentsRouter.route('/:comment_id')
+.delete(deleteComment)
+.patch(patchCommentById)
+
+module.exports = commentsRouter;
+
