@@ -18,6 +18,7 @@ describe('GET /api/categories', () => {
           .expect(200)
           .then(({ body }) => {
             expect(body.categories).toBeInstanceOf(Array);
+            expect(body.categories.length).toBeGreaterThan(0);
             body.categories.forEach((category) => {
               expect(category).toEqual(
                 expect.objectContaining({
@@ -67,7 +68,6 @@ describe('GET /api/reviews/:review_id', () => {
         .get(`/api/reviews/0`)
         .expect(400)
         .then((response) => {
-          console.log(response)
           expect(response.text).toEqual(
             "Review_id does not exist"
       );
@@ -166,14 +166,15 @@ describe('PATCH /api/reviews/:review_id', () => {
     })
 })
 
-describe.only('GET /api/reviews', () => {
+describe('GET /api/reviews', () => {
     test('Status 200: Responds with an object with a key of "reviews" which has value of an array of review objects', () => {
         return request(app)
           .get('/api/reviews')
           .expect(200)
           .then(({ body }) => {
             expect(body.reviews).toBeInstanceOf(Array);
-            body.reviews.forEach((review) => { //ADD CHECK THAT ARRAY LENGTH >0
+            expect(body.reviews.length).toBeGreaterThan(0);
+            body.reviews.forEach((review) => { 
               expect(review).toEqual(
                 expect.objectContaining({
                   review_id: expect.any(Number),
@@ -315,10 +316,11 @@ describe.only('GET /api/reviews', () => {
 describe('GET /api/reviews/:review_id/comments', () => {
     test('Status 200: Responds with an object with a key of "comments" which has value of an array of comment objects which corresond to the review_id provided', () => {
         return request(app)
-          .get('/api/reviews/1/comments')
+          .get('/api/reviews/2/comments')
           .expect(200)
           .then(({ body }) => {
             expect(body.comments).toBeInstanceOf(Array);
+            expect(body.comments.length).toBeGreaterThan(0);
             body.comments.forEach((comment) => {
               expect(comment).toEqual(
                 expect.objectContaining({
@@ -501,6 +503,7 @@ describe('GET /api', () => {
       .expect(200)
       .then(({ body }) => {
         expect(body.directory).toBeInstanceOf(Array);
+        expect(body.directory.length).toBeGreaterThan(0);
         body.directory.forEach((endpoint) => {
           expect(endpoint).toEqual(
             expect.objectContaining({
@@ -531,6 +534,7 @@ describe('GET /api/users', () => {
           .expect(200)
           .then(({ body }) => {
             expect(body.users).toBeInstanceOf(Array);
+            expect(body.users.length).toBeGreaterThan(0);
             body.users.forEach((user) => {
               expect(user).toEqual(
                 expect.objectContaining({

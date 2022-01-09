@@ -14,7 +14,6 @@ const seed = ({ categoryData, commentData, reviewData, userData }) => {
       return db.query(`DROP TABLE IF EXISTS categories;`)
     })
     .then(() => {
-      // console.log("All tables dropped!")
       return db.query(`
       CREATE TABLE categories (
         slug VARCHAR(50) UNIQUE PRIMARY KEY NOT NULL,
@@ -63,7 +62,6 @@ const seed = ({ categoryData, commentData, reviewData, userData }) => {
       `)
     })
     .then(()=> {
-      // console.log("All tables created!")
       let categoryArr = categoryData.map((category) =>{
         return [category.slug, category.description]
       });
@@ -107,9 +105,6 @@ const seed = ({ categoryData, commentData, reviewData, userData }) => {
         VALUES
         %L;`, commentsArr)
       return db.query(queryStr)
-    })
-    .then(()=> {
-      //console.log("All tables populated!")
     })
     .catch((err) => {
       console.log(err)
