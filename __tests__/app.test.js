@@ -486,7 +486,7 @@ describe('DELETE /api/comments/:comment_id', () => {
     }),
     test('Status 400: Responds with an error message when invalid comment_id type is provided', () => {
       return request(app)
-        .get(`/api/comments/not_an_id`)
+        .delete(`/api/comments/not_an_id`)
         .expect(400)
         .then((response) => {
           expect(response.text).toEqual(
